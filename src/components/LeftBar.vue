@@ -44,8 +44,8 @@
               </template>
               <el-menu-item-group v-for="(group,index) in submenu.groups" :key="index">
                 <template slot="title">{{group.groupName}}</template>
-                <el-menu-item v-for="(item,index) in group.items" :key="index" :index=" rootRouter + '/'+ item.index">
-                  {{rootRouter + '/' + item.index}}
+                <el-menu-item v-for="(item,index) in group.items" :key="index" :index="  item.index">
+                  {{ item.name}}
 
                 </el-menu-item>
               </el-menu-item-group>
@@ -82,7 +82,7 @@
         rootRouter: null,
         barMenus: fixMenus.menu,
         defaultOpen: ['menu1'],
-        defaultActive: 'p/audit'
+        defaultActive: 'p/book'
       }
     },
     methods: {

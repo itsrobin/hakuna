@@ -7,8 +7,8 @@ const fixMenus = {
     groups: [{
       groupName: '分组1',
       items: [
-        {index: 'audit', name: '选项1'},
-        {index: 'aduit2', name: '选项2'}]
+        {index: 'book', name: '书籍管理'},
+        {index: 'user', name: '用户管理'}]
     }, {
       groupName: '分组2',
       items: [

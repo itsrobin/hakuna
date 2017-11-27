@@ -2,7 +2,8 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import HomePage from '@/components/HomePage.vue'
 import Project from '@/pages/Project.vue'
-import Audit from '@/pages/audit/Audit.vue'
+import Book from '@/pages/manage/Book.vue'
+import User from '@/pages/manage/User.vue'
 import Background from '@/components/Background.vue'
 import Login from '@/pages/Login.vue'
 
@@ -33,17 +34,22 @@ export default new Router({
           children: [
             // info
             {
-              path: 'audit',
-              name: 'project.audit',
-              component: Audit
+              path: 'book',
+              name: 'project.book',
+              component: Book
+            },
+            {
+              path: 'user',
+              name: 'project.user',
+              component: User
             },
             {
               path: '*',
-              redirect: {name: 'project.audit'}
+              redirect: {name: 'project.book'}
             }]
         }, {
           path: '*',
-          redirect: {name: 'project.background'}
+          redirect: {name: 'project.book'}
         }]
     },
     {
