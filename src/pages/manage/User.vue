@@ -30,62 +30,37 @@
       </div>
       <el-table
         :data="tableData"
-        style="width: 100%" v-loading="loading"
-        max-height="500">
-        <el-table-column type="expand">
-          <template slot-scope="props">
-            <el-form label-position="left" inline class="demo-table-expand">
-              <el-form-item label="书籍描述">
-                <span>{{ props.row.bookDes }}</span>
-              </el-form-item>
-              <!--<el-form-item label="商品 ID">-->
-                <!--<span>{{ props.row.id }}</span>-->
-              <!--</el-form-item>-->
-              <!--<el-form-item label="店铺 ID">-->
-                <!--<span>{{ props.row.shopId }}</span>-->
-              <!--</el-form-item>-->
-              <!--<el-form-item label="商品分类">-->
-                <!--<span>{{ props.row.category }}</span>-->
-              <!--</el-form-item>-->
-              <!--<el-form-item label="店铺地址">-->
-                <!--<span>{{ props.row.address }}</span>-->
-              <!--</el-form-item>-->
-              <!--<el-form-item label="商品描述">-->
-                <!--<span>{{ props.row.desc }}</span>-->
-              <!--</el-form-item>-->
-            </el-form>
-          </template>
+        style="width: 100%"
+        @sort-change=sortChange
+        @filter-change="filterTag">
+        <el-table-column
+          prop="id"
+          label="id">
         </el-table-column>
         <el-table-column
-          label="书籍 ID"
-          prop="id">
+          prop="userName"
+          label="姓名">
         </el-table-column>
         <el-table-column
-          label="书籍作者"
-          prop="bookAuthor">
+          prop="userEmail"
+          label="邮箱">
         </el-table-column>
         <el-table-column
-          label="书籍名称"
-          prop="bookName">
+          prop="gmtCreate"
+          label="注册时间"
+          sortable='custom'
+          :formatter="DateFormatter">
         </el-table-column>
-
         <el-table-column
+          prop="tag"
           label="标签"
-          prop="bookTag">
-        </el-table-column>
-        <el-table-column
-          label="下载量"
-          prop="downloadTime">
-        </el-table-column>
-        <el-table-column
-          label="收藏量"
-          prop="collectTime">
-        </el-table-column>
-        <el-table-column label="操作">
+          width="100"
+          column-key="userStatusList"
+          :filters="[{ text: '会员', value: 2 }, { text: '管理员', value: 5 },{ text: '普通用户', value: 1 }]"
+          filter-placement="bottom-end">
           <template slot-scope="scope">
-            <el-button
-              size="mini"
-              @click="handleEdit(scope.$index, scope.row)">编辑
+            <el-tag :type="checkStatus(scope.row.userStatus,'type')" close-transition>
+              {{checkStatus(scope.row.userStatus)}}
 
 
 
@@ -96,14 +71,15 @@
 
 
 
-            </el-button>
-            <!--<el-button-->
-            <!--size="mini"-->
-            <!--type="danger"-->
-            <!--@click="handleDelete(scope.$index, scope.row)">删除</el-button>-->
+
+
+
+
+
+
+            </el-tag>
           </template>
         </el-table-column>
-
       </el-table>
       <div class="block" style="float: right">
         <el-pagination
@@ -123,12 +99,67 @@
 
 
 <script>
+  import {formatDate} from '@/components/utils/DateUtil'
   import http from '@/components/utils/HttpUtil'
   export default {
     created () {
       this.getBookList(this.currentPage, this.pageSize)
     },
     methods: {
+      sortChange (column) {
+        this.sortMap[column.prop] = column.order
+        let sortsArray = []
+        for (let key in this.sortMap) {
+          let val = this.sortMap[key]
+          if (val === null) continue
+          let s = key + ' ' + this.directory[val]
+          sortsArray.push(s)
+        }
+        let sorts = sortsArray.join(',')
+        this.getBookList(this.currentPage, this.pageSize, null, sorts)
+      },
+      checkStatus (value, type) {
+        if (!type) {
+          if (value === 0) {
+            return '未激活'
+          }
+          if (value === 1) {
+            return '普通会员'
+          }
+          if (value === 2) {
+            return '会员'
+          }
+          if (value === 5) {
+            return '管理员'
+          }
+        } else {
+          if (value === 0) {
+            return 'info'
+          }
+          if (value === 1) {
+            return 'primary'
+          }
+          if (value === 2) {
+            return 'success'
+          }
+          if (value === 5) {
+            return 'danger'
+          }
+        }
+      },
+      filterTag (value) {
+        let filters = {}
+        for (let key in value) {
+          filters[key] = value[key].join(',')
+        }
+        console.log(filters)
+        this.getBookList(this.currentPage, this.pageSize, null, null, filters)
+//        return row.userStatus === value
+      },
+      DateFormatter (row, column) {
+        let date = new Date(row.gmtCreate)
+        return formatDate(date, 'yyyy-MM-dd hh:mm:ss')
+      },
       handleEdit (index, row) {
         console.log(index, row)
       },
@@ -143,24 +174,34 @@
         this.currentPage = val
         this.getBookList(val, this.pageSize)
       },
-      getBookList (pageNo, pageSize) {
+      getBookList (pageNo, pageSize, userStatus, sorts, filters) {
         this.loading = true
         let params = new URLSearchParams()
         params.append('pageNo', pageNo)
+//        params.append('sorts', pageNo)
         params.append('pageSize', pageSize)
-
+        if (userStatus !== null && userStatus !== undefined) {
+          params.append('userStatus', userStatus)
+        }
+        if (sorts !== null && sorts !== undefined) {
+          params.append('sorts', sorts)
+        }
+        if (filters !== null && filters !== undefined) {
+          for (let key in filters) {
+            params.append(key, filters[key])
+          }
+        }
         let config = {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
           }
         }
-        http.post('/private/book/list', params, config).then((res) => {
+        http.post('/private/user/list', params, config).then((res) => {
           if (res.status === 200) {
             let variable = res.data
-            console.log(variable)
             if (variable.success) {
               this.total = variable.data.size
-              this.tableData = variable.data.books
+              this.tableData = variable.data.users
               this.loading = false
             }
           }
@@ -169,44 +210,15 @@
     },
     data () {
       return {
+        directory: {ascending: 'asc', descending: 'desc'},
+        sortMap: {},
+        order: ['1', '2', '3'],
         input: '',
         loading: true,
         currentPage: 1,
         pageSize: 50,
         total: 0,
-        tableData: [{
-          id: '12987122',
-          name: '好滋好味鸡蛋仔',
-          category: '江浙小吃、小吃零食',
-          desc: '荷兰优质淡奶，奶香浓而不腻',
-          address: '上海市普陀区真北路',
-          shop: '王小虎夫妻店',
-          shopId: '10333'
-        }, {
-          id: '12987123',
-          name: '好滋好味鸡蛋仔',
-          category: '江浙小吃、小吃零食',
-          desc: '荷兰优质淡奶，奶香浓而不腻',
-          address: '上海市普陀区真北路',
-          shop: '王小虎夫妻店',
-          shopId: '10333'
-        }, {
-          id: '12987125',
-          name: '好滋好味鸡蛋仔',
-          category: '江浙小吃、小吃零食',
-          desc: '荷兰优质淡奶，奶香浓而不腻',
-          address: '上海市普陀区真北路',
-          shop: '王小虎夫妻店',
-          shopId: '10333'
-        }, {
-          id: '12987126',
-          name: '好滋好味鸡蛋仔',
-          category: '江浙小吃、小吃零食',
-          desc: '荷兰优质淡奶，奶香浓而不腻',
-          address: '上海市普陀区真北路',
-          shop: '王小虎夫妻店',
-          shopId: '10333'
-        }]
+        tableData: []
       }
     }
   }

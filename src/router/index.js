@@ -5,6 +5,7 @@ import Project from '@/pages/Project.vue'
 import Book from '@/pages/manage/Book.vue'
 import User from '@/pages/manage/User.vue'
 import Background from '@/components/Background.vue'
+import Upload from '@/pages/file/Upload.vue'
 import Login from '@/pages/Login.vue'
 
 Vue.use(Router)
@@ -42,6 +43,11 @@ export default new Router({
               path: 'user',
               name: 'project.user',
               component: User
+            },
+            {
+              path: 'upload',
+              name: 'project.upload',
+              component: Upload
             },
             {
               path: '*',

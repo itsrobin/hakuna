@@ -5,14 +5,14 @@ const fixMenus = {
     index: 'menu1',
     icoClass: 'el-icon-location',
     groups: [{
-      groupName: '分组1',
+      groupName: '管理',
       items: [
         {index: 'book', name: '书籍管理'},
         {index: 'user', name: '用户管理'}]
     }, {
-      groupName: '分组2',
+      groupName: '文件',
       items: [
-        {index: 'aduit3', name: '选项1'},
+        {index: 'upload', name: '文件上传'},
         {index: 'aduit4', name: '选项2'}]
     }]
   }, {
